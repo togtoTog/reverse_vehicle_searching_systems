@@ -57,7 +57,7 @@ def load_dataset():
 
 def train_init():
     # 设置模型结构
-    model = models.resnet18(pretrained=False).to(color_cfg.MODEL.DEVICE)
+    model = models.resnet34(pretrained=False).to(color_cfg.MODEL.DEVICE)
     # 加载预训练模型参数
     model.load_state_dict(torch.load(color_cfg.MODEL.PRETRAIN))
 
@@ -79,7 +79,7 @@ def train_and_valid(train_loader, test_loader, train_data_size, valid_data_size,
     best_epoch = 0
 
     for epoch in range(epochs):
-        print('model_{}.pth'.format(epoch))
+        print('model_{}.pth'.format(epoch + 1))
         epoch_start = time.time()
         print("Epoch: {}/{}".format(epoch + 1, epochs))
 
@@ -165,5 +165,23 @@ def train_and_valid(train_loader, test_loader, train_data_size, valid_data_size,
 if __name__ == '__main__':
     train_loader, test_loader, train_data_size, valid_data_size = load_dataset()
     model, loss_function, optimizer = train_init()
-    train_and_valid(train_loader, test_loader, train_data_size, valid_data_size,
+    history = train_and_valid(train_loader, test_loader, train_data_size, valid_data_size,
                     model, loss_function, optimizer, color_cfg.TRAIN.EPOCHS)
+    # 将训练参数用图表示出来
+    history = np.array(history)
+    plt.plot(history[:, 0:2])
+    plt.legend(['Tr Loss', 'Val Loss'])
+    plt.xlabel('Epoch Number')
+    plt.ylabel('Loss')
+    plt.ylim(0, 1.1)
+    plt.savefig(color_cfg.METRIC.LOSS_PIC)
+    # plt.show()
+
+    plt.cla()
+
+    plt.plot(history[:, 2:4])
+    plt.legend(['Tr Accuracy', 'Val Accuracy'])
+    plt.xlabel('Epoch Number')
+    plt.ylabel('Accuracy')
+    plt.ylim(0, 1.1)
+    plt.savefig(color_cfg.METRIC.ACCURACY_PIC)
